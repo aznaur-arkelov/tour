@@ -28,7 +28,9 @@ class User(db.Model, flask_login.UserMixin):
 class Tour(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(500), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(50), nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Integer, nullable=False)
 
 
@@ -72,7 +74,22 @@ def index():
     if not flask_login.current_user.is_authenticated:
         return flask.redirect('/login')
 
-    return flask.render_template('index.html')
+    location = flask.request.args.get('location')
+    duration = flask.request.args.get('duration')
+
+    if location:
+        filtered_tours = Tour.query.filter_by(location=location)
+    elif duration:
+        filtered_tours = Tour.query.filter_by(duration=duration)
+    else:
+        filtered_tours = Tour.query.all()
+
+    locations = set()
+
+    for tour in Tour.query.all():
+        locations.add(tour.location)
+
+    return flask.render_template('index.html', tours=filtered_tours, locations=locations)
 
 
 @app.route('/logout')
