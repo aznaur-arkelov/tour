@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action='login' method='POST'>
+    <input type='text' name='username' id='username' placeholder='Имя пользователя'/>
+    <input type='password' name='password' id='password' placeholder='Пароль'/>
+    <input type='submit' name='submit' value="Войти"/>
+</form>
+
+{% if error %}
+    <h1> Неправильно ебаные волки!!!!! </h1>
+{% endif %}
+
+<a href="/register">Регистрация</a>
+
+{% endblock %}

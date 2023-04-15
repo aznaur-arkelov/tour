@@ -1,0 +1,12 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+
+<form action='new_tour' method='POST'>
+    <input type='text' name='username' id='username' placeholder='Имя пользователя'/>
+    <input type='password' name='password' id='password' placeholder='Пароль'/>
+    <input type='password' name='password' id='password' placeholder='Пароль'/>
+    <input type='submit' name='submit' value="Создать"/>
+</form>
+
+{% endblock %}

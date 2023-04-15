@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block navigation %}
+
+{% if current_user.admin %}
+<ul class="navbar-nav">
+    <a class="nav-link" href="/new_tour">Добавить тур</a>
+</ul>
+<ul class="navbar-nav">
+    <a class="nav-link" href="/requests">Заявки</a>
+</ul>
+{% else %}
+<ul class="navbar-nav">
+    <a class="nav-link" href="/cart">Корзина</a>
+</ul>
+<ul class="navbar-nav">
+    <a class="nav-link" href="/my_requests">Мои заявки</a>
+</ul>
+{% endif %}
+
+{% endblock %}
