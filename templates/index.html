@@ -55,11 +55,16 @@
 					<p><strong>Место:</strong> {{ tour.location }} </p>
 					<p><strong>Длительность:</strong> {{ tour.duration }} дня </p>
 					<p><strong>Описание:</strong> {{ tour.description }} </p>
+
+					<form action="/add_to_cart/{{ tour.id }}" method="POST">
+						<input type="submit" value="Добавить в корзину">
+					</form>
 				</div>
 			</div>
 		</div>
 
 		{% endfor %}
 
+	</div>
 
 {% endblock %}

@@ -1,3 +1,4 @@
+import http
 import os
 import flask
 import flask_login
@@ -11,6 +12,11 @@ app = flask.Flask(__name__)
 load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -114,10 +120,49 @@ def new_tour():
         db.session.add(new_tour)
         db.session.commit()
 
-        flask.flash('Tour added successfully!', 'success')
+        flask.flash('Тур создан', 'success')
         return flask.redirect('/')
 
     return flask.render_template('new_tour.html')
+
+
+@app.route('/add_to_cart/<tour_id>', methods=['POST'])
+def add_to_cart(tour_id):
+
+    if not flask_login.current_user.is_authenticated:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    tour = Tour.query.filter_by(id=tour_id)
+
+    if 'cart' not in flask.session:
+        flask.session['cart'] = []
+
+    flask.session['cart'].append(tour_id)
+    flask.flash('Добавлено в корзину', 'success')
+    return flask.redirect('/cart')
+
+
+@app.route('/cart')
+def cart():
+    tours = []
+    total_price = 0
+    if 'cart' in flask.session:
+        for tour_id in flask.session['cart']:
+            tour = Tour.query.get(tour_id)
+            tours.append(tour)
+            total_price += tour.price
+    return flask.render_template('cart.html', tours=tours, total_price=total_price)
+
+@app.route('/remove_from_cart/<tour_id>', methods=['POST'])
+def remove_from_cart(tour_id):
+
+    if not flask_login.current_user.is_authenticated:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    flask.session['cart'].remove(tour_id)
+    flask.flash('Удалено из корзины', 'success')
+    return flask.redirect('/cart')
+
 
 @app.route('/logout')
 @flask_login.login_required

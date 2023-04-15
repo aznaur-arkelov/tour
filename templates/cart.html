@@ -1,0 +1,48 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+
+	<h1>Корзина</h1><br/>
+
+	<style>
+		.tour {
+			border: 1px solid #e5e5e5;
+			padding: 10px;
+			margin-bottom: 20px;
+			border-radius: 5px;
+		}
+		.tour h4 {
+			margin-top: 0;
+		}
+		.tour p {
+			margin-bottom: 5px;
+		}
+	</style>
+
+	<div class="container">
+
+		{% for tour in tours %}
+
+		<div class="row">
+			<div class="col-md-12">
+				<div class="tour">
+					<h4>Тур "{{ tour.name }}"</h4>
+					<p><strong>Стоимость:</strong> {{ tour.price }} руб.</p>
+					<p><strong>Место:</strong> {{ tour.location }} </p>
+					<p><strong>Длительность:</strong> {{ tour.duration }} дня </p>
+					<p><strong>Описание:</strong> {{ tour.description }} </p>
+
+					<form action="/remove_from_cart/{{ tour.id }}" method="POST">
+						<input type="submit" value="Удалить из корзины">
+					</form>
+				</div>
+			</div>
+		</div>
+
+		{% endfor %}
+
+    </div>
+
+<h1>Итого: {{ total_price }} руб. </h1>
+
+{% endblock %}
