@@ -30,24 +30,13 @@
 
 <br>
 
-<style>
-    .tour-image {
-        width: 150px;
-        height: auto;
-        float: left;
-        margin-right: 10px;
-    }
-
-
-</style>
-
 <div class="container">
 
     {% for tour in tours %}
 
     <div class="row">
         <div class="col-md-4">
-            <img src="/uploads/{{ tour.image or '45.png' }}" class="img-fluid rounded" alt="Tour Image">
+            <img src="/uploads/{{ tour.image or 'tour.png' }}" class="img-fluid rounded" alt="Tour Image">
         </div>
         <div class="col-md-8">
             <div class="card mb-4">
@@ -61,6 +50,14 @@
                     <form action="/add_to_cart/{{ tour.id }}" method="POST">
                         <button type="submit" class="btn btn-primary">Добавить в корзину</button>
                     </form>
+
+                    {% if current_user.admin %}
+                    <br>
+                    <form action="/delete_tour/{{ tour.id }}" method="POST">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </form>
+
+                    {% endif %}
                 </div>
             </div>
         </div>

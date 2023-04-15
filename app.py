@@ -196,5 +196,19 @@ def download_file(name):
     return flask.send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
 
+@app.route('/delete_tour/<tour_id>', methods=['POST'])
+def delete_tour(tour_id):
+    if not flask_login.current_user.is_authenticated:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    if not flask_login.current_user.admin:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    Tour.query.filter_by(id=tour_id).delete()
+    db.session.commit()
+
+    return flask.redirect('/')
+
+
 if __name__ == '__main__':
     app.run()
