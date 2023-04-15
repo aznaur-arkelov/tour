@@ -15,7 +15,9 @@
 </form>
 
 {% if error %}
-<h1> Неправильно ебаные волки!!!!! </h1>
+  <div class="alert alert-danger mt-3" role="alert">
+    Неверное имя пользователя или пароль!
+  </div>
 {% endif %}
 
 <a href="/register">Регистрация</a>

@@ -5,7 +5,7 @@ import flask_login
 
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
-
+from werkzeug.utils import secure_filename
 
 app = flask.Flask(__name__)
 
@@ -17,6 +17,9 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -38,6 +41,7 @@ class Tour(db.Model):
     location = db.Column(db.String(50), nullable=False)
     duration = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String(256), nullable=True)
 
 
 @login_manager.user_loader
@@ -102,9 +106,16 @@ def index():
     return flask.render_template('index.html', tours=filtered_tours, locations=locations)
 
 
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route('/new_tour', methods=['GET', 'POST'])
 def new_tour():
-
     if not flask_login.current_user.admin:
         return flask.redirect('/login')
 
@@ -116,8 +127,18 @@ def new_tour():
         duration = int(request.form['duration'])
         price = int(request.form['price'])
 
-        new_tour = Tour(name=name, description=description, location=location, duration=duration, price=price)
-        db.session.add(new_tour)
+        # handle file upload
+        file = request.files.get('image', '')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        else:
+            filename = None
+
+        tour = Tour(name=name, description=description, location=location, duration=duration, price=price,
+                    image=filename)
+
+        db.session.add(tour)
         db.session.commit()
 
         flask.flash('Тур создан', 'success')
@@ -128,7 +149,6 @@ def new_tour():
 
 @app.route('/add_to_cart/<tour_id>', methods=['POST'])
 def add_to_cart(tour_id):
-
     if not flask_login.current_user.is_authenticated:
         return '', http.HTTPStatus.BAD_REQUEST
 
@@ -153,9 +173,9 @@ def cart():
             total_price += tour.price
     return flask.render_template('cart.html', tours=tours, total_price=total_price)
 
+
 @app.route('/remove_from_cart/<tour_id>', methods=['POST'])
 def remove_from_cart(tour_id):
-
     if not flask_login.current_user.is_authenticated:
         return '', http.HTTPStatus.BAD_REQUEST
 
@@ -169,6 +189,12 @@ def remove_from_cart(tour_id):
 def logout():
     flask_login.logout_user()
     return flask.redirect('/')
+
+
+@app.route('/uploads/<name>')
+def download_file(name):
+    return flask.send_from_directory(app.config["UPLOAD_FOLDER"], name)
+
 
 if __name__ == '__main__':
     app.run()
