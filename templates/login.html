@@ -2,14 +2,20 @@
 
 {% block content %}
 
-<form action='login' method='POST'>
-    <input type='text' name='username' id='username' placeholder='Имя пользователя'/>
-    <input type='password' name='password' id='password' placeholder='Пароль'/>
-    <input type='submit' name='submit' value="Войти"/>
+<form action="login" method="POST">
+    <div class="form-group">
+        <label for="username">Имя пользователя:</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Имя пользователя">
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль:</label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Пароль">
+    </div>
+    <button type="submit" class="btn btn-primary" name="submit">Войти</button>
 </form>
 
 {% if error %}
-    <h1> Неправильно ебаные волки!!!!! </h1>
+<h1> Неправильно ебаные волки!!!!! </h1>
 {% endif %}
 
 <a href="/register">Регистрация</a>

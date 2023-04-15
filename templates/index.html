@@ -2,69 +2,58 @@
 
 {% block content %}
 
-	<h1>Список туров</h1><br/>
+<h1>Список туров</h1><br/>
 
-	<form action="/" method="GET">
-		<label for="location">Место:</label>
-		<select id="location" name="location">
-			<option value="">Выберите место</option>
-			{% for loc in locations %}
-				<option value="{{ loc }}">{{ loc }}</option>
-			{% endfor %}
-		</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<form action="/" method="GET">
+    <div class="form-group">
+        <label for="location">Место:</label>
+        <select class="form-control" id="location" name="location">
+            <option value="">Выберите место</option>
+            {% for loc in locations %}
+            <option value="{{ loc }}">{{ loc }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="duration">Длительность:</label>
+        <select class="form-control" id="duration" name="duration">
+            <option value="">Выберите длительность</option>
+            <option value="1">1 день</option>
+            <option value="2">2 дня</option>
+            <option value="3">3 дня</option>
+            <option value="4">4 дня</option>
+            <!-- <option value="5">5 дней и более</option> -->
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Фильтровать</button>
+</form>
 
-		<label for="duration">Длительность:</label>
-		<select id="duration" name="duration">
-			<option value="">Выберите длительность</option>
-			<option value="1">1 день</option>
-			<option value="2">2 дня</option>
-			<option value="3">3 дня</option>
-			<option value="4">4 дня</option>
-			<!-- <option value="5">5 дней и более</option> -->
-		</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br>
 
-		<input type="submit" value="Фильтровать">
-	</form>
+<div class="container">
 
-	<style>
-		.tour {
-			border: 1px solid #e5e5e5;
-			padding: 10px;
-			margin-bottom: 20px;
-			border-radius: 5px;
-		}
-		.tour h4 {
-			margin-top: 0;
-		}
-		.tour p {
-			margin-bottom: 5px;
-		}
-	</style>
+    {% for tour in tours %}
 
-    <br/>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Тур "{{ tour.name }}"</h4>
+                    <p class="card-text"><strong>Стоимость:</strong> {{ tour.price }} руб.</p>
+                    <p class="card-text"><strong>Место:</strong> {{ tour.location }}</p>
+                    <p class="card-text"><strong>Длительность:</strong> {{ tour.duration }} дня</p>
+                    <p class="card-text"><strong>Описание:</strong> {{ tour.description }}</p>
 
-	<div class="container">
+                    <form action="/add_to_cart/{{ tour.id }}" method="POST">
+                        <button type="submit" class="btn btn-primary">Добавить в корзину</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-		{% for tour in tours %}
+    {% endfor %}
 
-		<div class="row">
-			<div class="col-md-12">
-				<div class="tour">
-					<h4>Тур "{{ tour.name }}"</h4>
-					<p><strong>Стоимость:</strong> {{ tour.price }} руб.</p>
-					<p><strong>Место:</strong> {{ tour.location }} </p>
-					<p><strong>Длительность:</strong> {{ tour.duration }} дня </p>
-					<p><strong>Описание:</strong> {{ tour.description }} </p>
-
-					<form action="/add_to_cart/{{ tour.id }}" method="POST">
-						<input type="submit" value="Добавить в корзину">
-					</form>
-				</div>
-			</div>
-		</div>
-
-		{% endfor %}
-
-	</div>
+</div>
 
 {% endblock %}
