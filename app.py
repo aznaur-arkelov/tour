@@ -41,6 +41,8 @@ def load_user(user_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if flask_login.current_user.is_authenticated:
+        flask_login.logout_user()
     if flask.request.method == 'POST':
         username = flask.request.form['username']
         password = flask.request.form['password']
@@ -56,6 +58,8 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if flask_login.current_user.is_authenticated:
+        flask_login.logout_user()
     if flask.request.method == 'POST':
         username = flask.request.form['username']
         password = flask.request.form['password']
@@ -91,6 +95,29 @@ def index():
 
     return flask.render_template('index.html', tours=filtered_tours, locations=locations)
 
+
+@app.route('/new_tour', methods=['GET', 'POST'])
+def new_tour():
+
+    if not flask_login.current_user.admin:
+        return flask.redirect('/login')
+
+    request = flask.request
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        location = request.form['location']
+        duration = int(request.form['duration'])
+        price = int(request.form['price'])
+
+        new_tour = Tour(name=name, description=description, location=location, duration=duration, price=price)
+        db.session.add(new_tour)
+        db.session.commit()
+
+        flask.flash('Tour added successfully!', 'success')
+        return flask.redirect('/')
+
+    return flask.render_template('new_tour.html')
 
 @app.route('/logout')
 @flask_login.login_required
