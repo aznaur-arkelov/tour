@@ -2,6 +2,7 @@ import http
 import os
 import flask
 import flask_login
+import datetime
 
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
@@ -42,6 +43,22 @@ class Tour(db.Model):
     duration = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Integer, nullable=False)
     image = db.Column(db.String(256), nullable=True)
+
+
+orders_tours = db.Table('tour_order',
+    db.Column('tour_id', db.Integer, db.ForeignKey('tour.id'), primary_key=True),
+    db.Column('order_id', db.Integer, db.ForeignKey('order.id'), primary_key=True)
+)
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    num_of_people = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    comment = db.Column(db.Text, nullable=True)
+    tours = db.relationship('Tour', secondary=orders_tours, backref=db.backref('orders', lazy=True))
 
 
 @login_manager.user_loader
@@ -168,9 +185,10 @@ def cart():
     total_price = 0
     if 'cart' in flask.session:
         for tour_id in flask.session['cart']:
-            tour = Tour.query.get(tour_id)
-            tours.append(tour)
-            total_price += tour.price
+            tour = Tour.query.filter_by(id=tour_id).first()
+            if tour:
+                tours.append(tour)
+                total_price += tour.price
     return flask.render_template('cart.html', tours=tours, total_price=total_price)
 
 
@@ -208,6 +226,38 @@ def delete_tour(tour_id):
     db.session.commit()
 
     return flask.redirect('/')
+
+
+@app.route('/cart', methods=['POST'])
+def order_tour():
+    if not flask_login.current_user.is_authenticated:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    request = flask.request
+    name = request.form['name']
+    email = request.form.get('email')
+    num_people = request.form.get('quantity')
+    trip_date = datetime.datetime.strptime(request.form.get('date'), '%Y-%m-%d')
+    comment = request.form.get('comment')
+    tours = []
+
+    if 'cart' in flask.session:
+        for tour_id in flask.session['cart']:
+            tour = Tour.query.filter_by(id=tour_id).first()
+            if tour:
+                tours.append(tour)
+
+    flask.session['cart'] = []
+
+    if len(tours) == 0:
+        flask.redirect('/cart')
+
+    order = Order(name=name, email=email, num_of_people=num_people, date=trip_date, comment=comment, tours=tours)
+
+    db.session.add(order)
+    db.session.commit()
+
+    return flask.redirect('/cart')
 
 
 if __name__ == '__main__':
