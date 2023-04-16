@@ -1,5 +1,7 @@
 import http
 import os
+import uuid
+
 import flask
 import flask_login
 import datetime
@@ -128,11 +130,6 @@ def index():
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 @app.route('/new_tour', methods=['GET', 'POST'])
 def new_tour():
     if not flask_login.current_user.admin:
@@ -148,11 +145,8 @@ def new_tour():
 
         # handle file upload
         file = request.files.get('image', '')
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        else:
-            filename = None
+        filename = uuid.uuid4().hex[:6] + ".jpg"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
         tour = Tour(name=name, description=description, location=location, duration=duration, price=price,
                     image=filename)
