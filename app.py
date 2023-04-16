@@ -46,9 +46,9 @@ class Tour(db.Model):
 
 
 orders_tours = db.Table('tour_order',
-    db.Column('tour_id', db.Integer, db.ForeignKey('tour.id'), primary_key=True),
-    db.Column('order_id', db.Integer, db.ForeignKey('order.id'), primary_key=True)
-)
+                        db.Column('tour_id', db.Integer, db.ForeignKey('tour.id')),
+                        db.Column('order_id', db.Integer, db.ForeignKey('order.id'))
+                        )
 
 
 class Order(db.Model):
@@ -58,6 +58,8 @@ class Order(db.Model):
     num_of_people = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, nullable=False)
     comment = db.Column(db.Text, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('orders', lazy=True))
     tours = db.relationship('Tour', secondary=orders_tours, backref=db.backref('orders', lazy=True))
 
 
@@ -252,12 +254,26 @@ def order_tour():
     if len(tours) == 0:
         flask.redirect('/cart')
 
-    order = Order(name=name, email=email, num_of_people=num_people, date=trip_date, comment=comment, tours=tours)
+    order = Order(name=name, email=email, num_of_people=num_people, date=trip_date, comment=comment, tours=tours,
+                  user_id=flask_login.current_user.id)
 
     db.session.add(order)
     db.session.commit()
 
-    return flask.redirect('/cart')
+    return flask.redirect('/orders?ordered=True')
+
+
+@app.route('/orders')
+def orders():
+    if not flask_login.current_user.is_authenticated:
+        return '', http.HTTPStatus.BAD_REQUEST
+
+    if flask_login.current_user.admin:
+        orders_list = Order.query.all()
+    else:
+        orders_list = Order.query.filter_by(user_id=flask_login.current_user.id)
+
+    return flask.render_template('orders.html', orders=orders_list, ordered=bool(flask.request.args.get('ordered')))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,43 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+
+{% if ordered %}
+<h3>Ожидайте, с вами свяжется менеджер.</h3>
+<br/><br/>
+{% endif %}
+
+<div class="container">
+    <h1>Список заказов</h1>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Email</th>
+            <th scope="col">Количество человек</th>
+            <th scope="col">Дата поездки</th>
+            <th scope="col">Комментарий</th>
+            <th scope="col">Туры</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for order in orders %}
+        <tr>
+            <th scope="row">{{ order.id }}</th>
+            <td>{{ order.name }}</td>
+            <td>{{ order.email }}</td>
+            <td>{{ order.num_of_people }}</td>
+            <td>{{ order.date }}</td>
+            <td>{{ order.comment }}</td>
+            <td>
+                {% for tour in order.tours %}
+                <span>{{ tour.name }}</span><br><br>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
